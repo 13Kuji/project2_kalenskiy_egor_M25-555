@@ -13,4 +13,5 @@ __pycache__/
 htmlcov/
 db_meta.json
 *.cast
+data/
 
