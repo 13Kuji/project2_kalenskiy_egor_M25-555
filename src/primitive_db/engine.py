@@ -9,9 +9,6 @@ METADATA_FILE = 'db_meta.json'
 
 def run():
     """Главная функция, содержащая основной цикл программы."""
-    print("Первая попытка запустить проект!")
-    print("***")
-    
     while True:
         # Загрузка актуальных метаданных
         metadata = load_metadata(METADATA_FILE)
