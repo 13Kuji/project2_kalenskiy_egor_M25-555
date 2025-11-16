@@ -82,6 +82,19 @@ help
 exit
 ```
 
+## Демонстрация
+
+Посмотрите интерактивную демонстрацию работы базы данных:
+
+[![asciicast](https://asciinema.org/a/demo.svg)](https://asciinema.org/a/demo)
+
+*Примечание: Замените `demo` на ID вашей записи после загрузки на asciinema.org*
+
+Для загрузки записи выполните:
+```bash
+asciinema upload demo.cast
+```
+
 ## Пример использования
 
 ```
