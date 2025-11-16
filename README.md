@@ -86,14 +86,39 @@ exit
 
 Посмотрите интерактивную демонстрацию работы базы данных:
 
-[![asciicast](https://asciinema.org/a/demo.svg)](https://asciinema.org/a/demo)
+[![asciicast](https://asciinema.org/a/YOUR_RECORDING_ID.svg)](https://asciinema.org/a/YOUR_RECORDING_ID)
 
-*Примечание: Замените `demo` на ID вашей записи после загрузки на asciinema.org*
+### Создание и загрузка записи
 
-Для загрузки записи выполните:
+1. Создайте запись с помощью скрипта:
+```bash
+bash create_demo.sh
+```
+
+Или вручную:
+```bash
+# Создайте файл с командами для демонстрации
+cat > /tmp/demo_input.txt << 'EOF'
+help
+create_table users name:str age:int email:str active:bool
+show_tables
+create_table products title:str price:int in_stock:bool
+show_tables
+drop_table products
+show_tables
+exit
+EOF
+
+# Запишите демонстрацию
+asciinema rec -c "poetry run database" demo.cast < /tmp/demo_input.txt
+```
+
+2. Загрузите запись на asciinema.org:
 ```bash
 asciinema upload demo.cast
 ```
+
+3. Замените `YOUR_RECORDING_ID` в README.md на ID, полученный после загрузки.
 
 ## Пример использования
 
