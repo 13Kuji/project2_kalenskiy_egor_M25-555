@@ -1,4 +1,11 @@
+import hashlib
+import json
+from .decorators import handle_db_errors, confirm_action, log_time, create_cacher
+
 ALLOWED_TYPES = {'int', 'str', 'bool'}
+
+# Создаем кэшер для select операций
+_cache_result = create_cacher()
 
 
 def _validate_type(value, expected_type):
@@ -30,6 +37,7 @@ def _convert_value(value, expected_type):
     return value
 
 
+@handle_db_errors
 def create_table(metadata, table_name, columns):
     """
     Создает новую таблицу в метаданных.
@@ -65,6 +73,8 @@ def create_table(metadata, table_name, columns):
     return metadata
 
 
+@handle_db_errors
+@confirm_action("удаление таблицы")
 def drop_table(metadata, table_name):
     """
     Удаляет таблицу из метаданных.
@@ -88,6 +98,8 @@ def drop_table(metadata, table_name):
     return metadata
 
 
+@handle_db_errors
+@log_time
 def insert(metadata, table_name, values):
     """
     Вставляет новую запись в таблицу.
@@ -161,13 +173,18 @@ def insert(metadata, table_name, values):
     # Добавляем запись
     table_data.append(new_row)
     
+    # Очищаем кэш после изменения данных
+    _cache_result.clear()
+    
     print(f"Запись успешно добавлена в таблицу '{table_name}' (ID: {new_id}).")
     return table_data
 
 
+@log_time
 def select(table_data, where_clause=None):
     """
     Выбирает записи из таблицы с опциональным условием WHERE.
+    Использует кэширование для одинаковых запросов.
     
     Args:
         table_data: Список записей таблицы
@@ -176,23 +193,49 @@ def select(table_data, where_clause=None):
     Returns:
         Список отфильтрованных записей
     """
-    if where_clause is None:
-        return table_data
+    # Создаем ключ для кэша на основе данных и условий
+    # Используем хеш содержимого данных и условий для стабильного ключа
+    try:
+        data_str = json.dumps(table_data, sort_keys=True, default=str)
+        data_hash = hashlib.md5(data_str.encode()).hexdigest()
+    except (TypeError, ValueError):
+        # Если не удается сериализовать, используем длину и первый элемент
+        data_hash = f"{len(table_data)}_{hash(str(table_data[0]) if table_data else '')}"
     
-    # Фильтрация по условиям
-    result = []
-    for row in table_data:
-        match = True
-        for column, value in where_clause.items():
-            if column not in row or row[column] != value:
-                match = False
-                break
-        if match:
-            result.append(row)
+    if where_clause:
+        try:
+            where_str = json.dumps(where_clause, sort_keys=True, default=str)
+            where_hash = hashlib.md5(where_str.encode()).hexdigest()
+        except (TypeError, ValueError):
+            where_hash = str(hash(tuple(sorted(where_clause.items()))))
+    else:
+        where_hash = 'none'
     
-    return result
+    cache_key = (data_hash, where_hash)
+    
+    def _select_impl():
+        """Внутренняя функция для выполнения выборки."""
+        if where_clause is None:
+            return table_data.copy()  # Возвращаем копию, чтобы не изменять исходные данные
+        
+        # Фильтрация по условиям
+        result = []
+        for row in table_data:
+            match = True
+            for column, value in where_clause.items():
+                if column not in row or row[column] != value:
+                    match = False
+                    break
+            if match:
+                result.append(row.copy())  # Копируем строку для безопасности
+        
+        return result
+    
+    # Используем кэширование
+    return _cache_result(cache_key, _select_impl)
 
 
+@handle_db_errors
 def update(table_data, set_clause, where_clause):
     """
     Обновляет записи в таблице.
@@ -224,6 +267,8 @@ def update(table_data, set_clause, where_clause):
             updated_count += 1  # Считаем записи, а не поля
     
     if updated_count > 0:
+        # Очищаем кэш после изменения данных
+        _cache_result.clear()
         print(f"Обновлено записей: {updated_count}.")
     else:
         print("Записи для обновления не найдены.")
@@ -231,6 +276,8 @@ def update(table_data, set_clause, where_clause):
     return table_data
 
 
+@handle_db_errors
+@confirm_action("удаление записей")
 def delete(table_data, where_clause):
     """
     Удаляет записи из таблицы по условию WHERE.
@@ -263,6 +310,8 @@ def delete(table_data, where_clause):
     
     deleted_count = len(indices_to_remove)
     if deleted_count > 0:
+        # Очищаем кэш после изменения данных
+        _cache_result.clear()
         print(f"Удалено записей: {deleted_count}.")
     else:
         print("Записи для удаления не найдены.")
