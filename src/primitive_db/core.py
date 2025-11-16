@@ -1,8 +1,7 @@
 import hashlib
 import json
 from .decorators import handle_db_errors, confirm_action, log_time, create_cacher
-
-ALLOWED_TYPES = {'int', 'str', 'bool'}
+from .constants import ALLOWED_TYPES
 
 # Создаем кэшер для select операций
 _cache_result = create_cacher()

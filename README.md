@@ -8,6 +8,12 @@
 poetry install
 ```
 
+или
+
+```bash
+make install
+```
+
 ## Запуск
 
 ```bash
@@ -18,6 +24,12 @@ poetry run database
 
 ```bash
 poetry run project
+```
+
+или
+
+```bash
+make run
 ```
 
 ## Управление таблицами

@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "project#2_kalenskiy_egor_M25-555"
 version = "0.4.0"
-description = ""
+description = "Простая база данных для управления таблицами и метаданными с поддержкой CRUD-операций"
 authors = ["e.kalenskiy <egor.kalenskiy@gmail.com>"]
 
 packages = [
@@ -21,7 +21,5 @@ prettytable = "^3.17.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[dependency-groups]
-dev = [
-    "ruff (>=0.14.5,<0.15.0)"
-]
+[tool.poetry.group.dev.dependencies]
+ruff = ">=0.14.5,<0.15.0"
