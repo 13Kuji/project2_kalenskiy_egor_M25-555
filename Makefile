@@ -13,3 +13,6 @@ publish:
 package-install:
 	poetry run pip install --force-reinstall --no-deps $$(find dist -name '*.whl' | head -1)
 
+lint:
+	poetry run ruff check .
+
