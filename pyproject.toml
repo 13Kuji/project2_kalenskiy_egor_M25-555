@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "project#2_kalenskiy_egor_M25-555"
+version = "0.1.0"
+description = ""
+authors = ["e.kalenskiy <egor.kalenskiy@gmail.com>"]
+
+packages = [
+    { include = "src" },
+]
+
+[tool.poetry.scripts]
+project = "src.primitive_db.main:main"
+
+[tool.poetry.dependencies]
+python = "^3.14"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
